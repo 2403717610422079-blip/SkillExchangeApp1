@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Register - Skill Exchange</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .register-card {
+            width: 90%;
+            max-width: 450px;
+
+            background: white;
+
+            padding: 40px;
+
+            border-radius: 22px;
+
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+        .logo {
+            text-align: center;
+
+            font-size: 28px;
+
+            font-weight: bold;
+
+            color: #5b4bc4;
+
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+
+            color: #777;
+
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            text-align: center;
+
+            color: #333;
+
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            font-weight: bold;
+
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+
+            width: 100%;
+
+            padding: 13px;
+
+            margin-bottom: 20px;
+
+            border: 1px solid #ddd;
+
+            border-radius: 10px;
+
+            font-size: 15px;
+
+            outline: none;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+
+            border-color: #667eea;
+
+            box-shadow: 0 0 5px rgba(102,126,234,0.3);
+        }
+
+        input[type="submit"] {
+
+            width: 100%;
+
+            padding: 13px;
+
+            border: none;
+
+            border-radius: 25px;
+
+            background: linear-gradient(135deg, #667eea, #764ba2);
+
+            color: white;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+        }
+
+        input[type="submit"]:hover {
+
+            opacity: 0.9;
+
+            transform: translateY(-2px);
+        }
+
+        .login-link {
+
+            text-align: center;
+
+            margin-top: 25px;
+
+            color: #777;
+        }
+
+        .login-link a {
+
+            color: #5b4bc4;
+
+            text-decoration: none;
+
+            font-weight: bold;
+        }
+
+        .login-link a:hover {
+
+            text-decoration: underline;
+        }
+
+        .home {
+
+            text-align: center;
+
+            margin-top: 15px;
+        }
+
+        .home a {
+
+            color: #666;
+
+            text-decoration: none;
+        }
+
+        .home a:hover {
+
+            color: #5b4bc4;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="register-card">
+
+        <div class="logo">
+            Skill Exchange
+        </div>
+
+        <div class="subtitle">
+            Create your account
+        </div>
+
+        <h2>Create Account</h2>
+
+        <form action="register" method="post">
+
+            <label>Name</label>
+
+            <input
+                type="text"
+                name="name"
+                placeholder="Enter your name"
+                required
+            >
+
+            <label>Email</label>
+
+            <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                required
+            >
+
+            <label>Password</label>
+
+            <input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                required
+            >
+
+            <input
+                type="submit"
+                value="Register"
+            >
+
+        </form>
+
+        <div class="login-link">
+
+            Already have an account?
+
+            <a href="login.html">
+                Login
+            </a>
+
+        </div>
+
+        <div class="home">
+
+            <a href="index.html">
+                Back to Home
+            </a>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

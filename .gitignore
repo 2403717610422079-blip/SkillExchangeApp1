@@ -1,0 +1,13 @@
+.metadata/
+.settings/
+Servers/
+bin/
+build/
+target/
+
+*.class
+
+.DS_Store
+Thumbs.db
+
+uploads/

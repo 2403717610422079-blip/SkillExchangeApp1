@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Exchange Requests - Skill Exchange</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .request-card {
+            width: 90%;
+            max-width: 500px;
+
+            background: white;
+
+            padding: 40px;
+
+            border-radius: 22px;
+
+            text-align: center;
+
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+        .logo {
+            font-size: 28px;
+
+            font-weight: bold;
+
+            color: #5b4bc4;
+
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #777;
+
+            margin-bottom: 25px;
+
+            line-height: 1.5;
+        }
+
+        h2 {
+            color: #333;
+
+            margin-bottom: 15px;
+        }
+
+        .view-button {
+            width: 100%;
+
+            padding: 13px;
+
+            border: none;
+
+            border-radius: 25px;
+
+            background: linear-gradient(135deg, #667eea, #764ba2);
+
+            color: white;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+        }
+
+        .view-button:hover {
+            opacity: 0.9;
+
+            transform: translateY(-2px);
+        }
+
+        .back {
+            margin-top: 25px;
+        }
+
+        .back a {
+            color: #5b4bc4;
+
+            text-decoration: none;
+
+            font-weight: bold;
+        }
+
+        .back a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="request-card">
+
+        <div class="logo">
+            Skill Exchange
+        </div>
+
+        <h2>Exchange Requests</h2>
+
+        <p class="subtitle">
+            View and manage the skill exchange requests
+            sent to you by other users.
+        </p>
+
+        <form action="requests" method="get">
+
+            <input
+                class="view-button"
+                type="submit"
+                value="View Requests"
+            >
+
+        </form>
+
+        <div class="back">
+
+            <a href="dashboard.html">
+                Back to Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
