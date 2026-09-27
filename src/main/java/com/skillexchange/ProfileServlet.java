@@ -11,357 +11,189 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 @WebServlet("/profile")
 public class ProfileServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    @Override
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response)
             throws ServletException, IOException {
 
-        response.setContentType("text/html;charset=UTF-8");
-
-        PrintWriter out = response.getWriter();
-
-        Integer loggedUserId =
-                (Integer) request.getSession().getAttribute("user_id");
+        HttpSession session = request.getSession(false);
+        Integer loggedUserId = (session != null) ? (Integer) session.getAttribute("user_id") : null;
 
         if (loggedUserId == null) {
-
-            response.sendRedirect(
-                    request.getContextPath() + "/login.html"
-            );
-
+            response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
 
-        String userIdText = request.getParameter("user_id");
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
 
+        String userIdText = request.getParameter("user_id");
         int profileUserId = loggedUserId;
 
         if (userIdText != null && !userIdText.trim().isEmpty()) {
-
             try {
-
-                profileUserId =
-                        Integer.parseInt(userIdText.trim());
-
+                profileUserId = Integer.parseInt(userIdText.trim());
             } catch (NumberFormatException e) {
-
-                out.println("<h2>Invalid User ID</h2>");
-                out.println("<a href='users'>Back to Users</a>");
-
+                renderError(out, "Invalid User ID", "The user ID requested is invalid.", "users", "Back to Users");
                 return;
             }
         }
 
-        try {
+        boolean isOwnProfile = (profileUserId == loggedUserId);
 
-        	Connection con = DBConnection.getConnection();
-            String userSql =
-                    "SELECT user_id, name, email " +
-                    "FROM users WHERE user_id = ?";
+        out.println("<!DOCTYPE html>");
+        out.println("<html><head><meta charset='UTF-8'><title>" + (isOwnProfile ? "My Profile" : "User Profile") + " - Skill Exchange</title>");
+        out.println("<style>");
+        out.println("* { box-sizing: border-box; }");
+        out.println("body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); min-height: 100vh; }");
+        out.println(".navbar { background: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 3px 15px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }");
+        out.println(".logo { font-size: 24px; font-weight: bold; color: #5b4bc4; text-decoration: none; }");
+        out.println(".nav-links { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }");
+        out.println(".nav-link { color: #555; text-decoration: none; font-weight: bold; font-size: 14px; padding: 6px 12px; border-radius: 15px; transition: 0.2s; }");
+        out.println(".nav-link:hover, .nav-link.active { color: #5b4bc4; background: #f0efff; }");
+        out.println(".logout { background: #ff5c5c; color: white !important; }");
+        out.println(".logout:hover { background: #e04444 !important; }");
+        out.println(".container { width: 90%; max-width: 900px; margin: 40px auto; }");
+        out.println(".profile-card { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.2); text-align: center; }");
+        out.println(".avatar { width: 75px; height: 75px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; margin: 0 auto 15px auto; }");
+        out.println(".profile-card h1 { color: #4b3ca7; margin-bottom: 5px; font-size: 26px; }");
+        out.println(".badge { display: inline-block; padding: 4px 12px; background: #f0efff; color: #5b4bc4; border-radius: 15px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }");
+        out.println(".email { color: #777; margin-bottom: 25px; font-size: 15px; }");
+        out.println(".section-title { color: #333; margin-top: 30px; margin-bottom: 20px; font-size: 20px; text-align: left; border-bottom: 2px solid #f0efff; padding-bottom: 10px; }");
+        out.println(".skills { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; text-align: left; }");
+        out.println(".skill-card { background: #f7f7ff; padding: 22px; border-radius: 16px; border: 1px solid #e5e3ff; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; }");
+        out.println(".skill-card:hover { transform: translateY(-4px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }");
+        out.println(".skill-card h3 { color: #4b3ca7; margin-top: 0; margin-bottom: 8px; font-size: 18px; }");
+        out.println(".skill-card p { color: #666; font-size: 14px; line-height: 1.5; margin-bottom: 18px; flex-grow: 1; }");
+        out.println(".request-button { border: none; padding: 10px 20px; border-radius: 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; width: 100%; }");
+        out.println(".request-button:hover { opacity: 0.9; transform: translateY(-2px); }");
+        out.println(".no-skills { color: #777; padding: 30px; background: #f9f9f9; border-radius: 12px; text-align: center; }");
+        out.println(".links { text-align: center; margin-top: 30px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }");
+        out.println(".links a { display: inline-block; padding: 10px 20px; border-radius: 20px; background: white; color: #5b4bc4; text-decoration: none; font-weight: bold; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }");
+        out.println(".links a:hover { background: #f0efff; }");
+        out.println("</style></head><body>");
 
-            PreparedStatement userPs =
-                    con.prepareStatement(userSql);
+        // Navbar
+        out.println("<div class='navbar'>");
+        out.println("<a class='logo' href='dashboard.html'>Skill Exchange</a>");
+        out.println("<div class='nav-links'>");
+        out.println("<a class='nav-link' href='dashboard.html'>Dashboard</a>");
+        out.println("<a class='nav-link' href='users'>All Users</a>");
+        out.println("<a class='nav-link " + (isOwnProfile ? "active" : "") + "' href='profile'>My Profile</a>");
+        out.println("<a class='nav-link' href='addskill.html'>Add Skill</a>");
+        out.println("<a class='nav-link' href='searchskill.html'>Search</a>");
+        out.println("<a class='nav-link' href='requests'>Requests</a>");
+        out.println("<a class='nav-link logout' href='logout'>Logout</a>");
+        out.println("</div></div>");
 
-            userPs.setInt(1, profileUserId);
+        out.println("<div class='container'>");
 
-            ResultSet userRs =
-                    userPs.executeQuery();
+        try (Connection con = DBConnection.getConnection()) {
+            String userSql = "SELECT user_id, name, email FROM users WHERE user_id = ?";
+            String userName = "";
+            String email = "";
 
-            if (!userRs.next()) {
-
-                out.println("<h2>User Not Found</h2>");
-                out.println("<a href='users'>Back to Users</a>");
-
-                userRs.close();
-                userPs.close();
-                con.close();
-
-                return;
+            try (PreparedStatement userPs = con.prepareStatement(userSql)) {
+                userPs.setInt(1, profileUserId);
+                try (ResultSet userRs = userPs.executeQuery()) {
+                    if (!userRs.next()) {
+                        renderError(out, "User Not Found", "The requested user profile does not exist.", "users", "Back to Users");
+                        return;
+                    }
+                    userName = userRs.getString("name");
+                    email = userRs.getString("email");
+                }
             }
 
-            String userName =
-                    userRs.getString("name");
-
-            String email =
-                    userRs.getString("email");
-
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-
-            out.println("<head>");
-
-            out.println("<meta charset='UTF-8'>");
-
-            out.println("<title>Profile - Skill Exchange</title>");
-
-            out.println("<style>");
-
-            out.println("* {");
-            out.println("box-sizing: border-box;");
-            out.println("}");
-
-            out.println("body {");
-            out.println("margin: 0;");
-            out.println("font-family: Arial, sans-serif;");
-            out.println("background: linear-gradient(135deg, #667eea, #764ba2);");
-            out.println("min-height: 100vh;");
-            out.println("}");
-
-            out.println(".navbar {");
-            out.println("background: white;");
-            out.println("padding: 18px 40px;");
-            out.println("box-shadow: 0 3px 15px rgba(0,0,0,0.15);");
-            out.println("}");
-
-            out.println(".logo {");
-            out.println("font-size: 24px;");
-            out.println("font-weight: bold;");
-            out.println("color: #5b4bc4;");
-            out.println("}");
-
-            out.println(".container {");
-            out.println("width: 90%;");
-            out.println("max-width: 850px;");
-            out.println("margin: 40px auto;");
-            out.println("}");
-
-            out.println(".profile-card {");
-            out.println("background: white;");
-            out.println("padding: 35px;");
-            out.println("border-radius: 20px;");
-            out.println("box-shadow: 0 8px 25px rgba(0,0,0,0.2);");
-            out.println("text-align: center;");
-            out.println("}");
-
-            out.println(".profile-card h1 {");
-            out.println("color: #4b3ca7;");
-            out.println("margin-bottom: 10px;");
-            out.println("}");
-
-            out.println(".email {");
-            out.println("color: #777;");
-            out.println("margin-bottom: 25px;");
-            out.println("}");
-
-            out.println(".section-title {");
-            out.println("color: #333;");
-            out.println("margin-top: 30px;");
-            out.println("margin-bottom: 20px;");
-            out.println("}");
-
-            out.println(".skills {");
-            out.println("display: grid;");
-            out.println("grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));");
-            out.println("gap: 20px;");
-            out.println("text-align: left;");
-            out.println("}");
-
-            out.println(".skill-card {");
-            out.println("background: #f7f7ff;");
-            out.println("padding: 25px;");
-            out.println("border-radius: 16px;");
-            out.println("border: 1px solid #e5e3ff;");
-            out.println("transition: 0.3s;");
-            out.println("}");
-
-            out.println(".skill-card:hover {");
-            out.println("transform: translateY(-4px);");
-            out.println("box-shadow: 0 6px 18px rgba(0,0,0,0.12);");
-            out.println("}");
-
-            out.println(".skill-card h3 {");
-            out.println("color: #4b3ca7;");
-            out.println("margin-top: 0;");
-            out.println("}");
-
-            out.println(".skill-card p {");
-            out.println("color: #666;");
-            out.println("line-height: 1.5;");
-            out.println("}");
-
-            out.println(".request-button {");
-            out.println("border: none;");
-            out.println("padding: 10px 20px;");
-            out.println("border-radius: 20px;");
-            out.println("background: linear-gradient(135deg, #667eea, #764ba2);");
-            out.println("color: white;");
-            out.println("font-weight: bold;");
-            out.println("cursor: pointer;");
-            out.println("}");
-
-            out.println(".request-button:hover {");
-            out.println("opacity: 0.85;");
-            out.println("}");
-
-            out.println(".no-skills {");
-            out.println("color: #777;");
-            out.println("padding: 20px;");
-            out.println("background: #f7f7f7;");
-            out.println("border-radius: 12px;");
-            out.println("}");
-
-            out.println(".links {");
-            out.println("text-align: center;");
-            out.println("margin-top: 30px;");
-            out.println("}");
-
-            out.println(".links a {");
-            out.println("display: inline-block;");
-            out.println("margin: 5px;");
-            out.println("padding: 10px 20px;");
-            out.println("border-radius: 20px;");
-            out.println("background: white;");
-            out.println("color: #5b4bc4;");
-            out.println("text-decoration: none;");
-            out.println("font-weight: bold;");
-            out.println("}");
-
-            out.println(".links a:hover {");
-            out.println("background: #f0efff;");
-            out.println("}");
-
-            out.println("</style>");
-
-            out.println("</head>");
-
-            out.println("<body>");
-
-            out.println("<div class='navbar'>");
-            out.println("<div class='logo'>Skill Exchange</div>");
-            out.println("</div>");
-
-            out.println("<div class='container'>");
+            String initial = (userName != null && !userName.isEmpty()) ? userName.substring(0, 1).toUpperCase() : "?";
 
             out.println("<div class='profile-card'>");
+            out.println("<div class='avatar'>" + escapeHtml(initial) + "</div>");
+            out.println("<h1>" + escapeHtml(userName) + "</h1>");
+            out.println("<div class='badge'>" + (isOwnProfile ? "Your Profile" : "Community Member") + "</div>");
+            out.println("<p class='email'>" + escapeHtml(email) + "</p>");
 
-            out.println("<h1>" + userName + "</h1>");
+            out.println("<h2 class='section-title'>Skills Offered</h2>");
 
-            out.println("<p class='email'>"
-                    + email
-                    + "</p>");
+            String skillSql = "SELECT skill_id, skill_name, skill_description FROM skills WHERE user_id = ? ORDER BY skill_id DESC";
+            try (PreparedStatement skillPs = con.prepareStatement(skillSql)) {
+                skillPs.setInt(1, profileUserId);
+                try (ResultSet skillRs = skillPs.executeQuery()) {
+                    out.println("<div class='skills'>");
+                    boolean hasSkills = false;
 
-            out.println("<h2 class='section-title'>Skills I Can Teach</h2>");
+                    while (skillRs.next()) {
+                        hasSkills = true;
+                        int skillId = skillRs.getInt("skill_id");
+                        String skillName = skillRs.getString("skill_name");
+                        String skillDescription = skillRs.getString("skill_description");
 
-            String skillSql =
-                    "SELECT skill_id, skill_name, skill_description " +
-                    "FROM skills WHERE user_id = ?";
+                        out.println("<div class='skill-card'>");
+                        out.println("<div>");
+                        out.println("<h3>" + escapeHtml(skillName) + "</h3>");
+                        out.println("<p>" + escapeHtml(skillDescription) + "</p>");
+                        out.println("</div>");
 
-            PreparedStatement skillPs =
-                    con.prepareStatement(skillSql);
+                        if (!isOwnProfile) {
+                            out.println("<form action='sendrequest' method='post'>");
+                            out.println("<input type='hidden' name='skill_id' value='" + skillId + "'>");
+                            out.println("<input type='hidden' name='receiver_id' value='" + profileUserId + "'>");
+                            out.println("<input class='request-button' type='submit' value='Send Exchange Request'>");
+                            out.println("</form>");
+                        }
+                        out.println("</div>");
+                    }
+                    out.println("</div>");
 
-            skillPs.setInt(1, profileUserId);
-
-            ResultSet skillRs =
-                    skillPs.executeQuery();
-
-            out.println("<div class='skills'>");
-
-            boolean hasSkills = false;
-
-            while (skillRs.next()) {
-
-                hasSkills = true;
-
-                int skillId =
-                        skillRs.getInt("skill_id");
-
-                String skillName =
-                        skillRs.getString("skill_name");
-
-                String skillDescription =
-                        skillRs.getString("skill_description");
-
-                out.println("<div class='skill-card'>");
-
-                out.println("<h3>"
-                        + skillName
-                        + "</h3>");
-
-                out.println("<p>"
-                        + skillDescription
-                        + "</p>");
-
-                if (loggedUserId != profileUserId) {
-
-                    out.println(
-                        "<form action='sendrequest' method='post'>"
-                    );
-
-                    out.println(
-                        "<input type='hidden' " +
-                        "name='skill_id' value='" +
-                        skillId + "'>"
-                    );
-
-                    out.println(
-                        "<input type='hidden' " +
-                        "name='receiver_id' value='" +
-                        profileUserId + "'>"
-                    );
-
-                    out.println(
-                        "<input class='request-button' " +
-                        "type='submit' " +
-                        "value='Send Request'>"
-                    );
-
-                    out.println("</form>");
+                    if (!hasSkills) {
+                        out.println("<div class='no-skills'>");
+                        out.println("<p>" + (isOwnProfile ? "You have not added any skills yet." : "This user has not added any skills yet.") + "</p>");
+                        if (isOwnProfile) {
+                            out.println("<a class='links' style='display:inline-block; margin-top:10px;' href='addskill.html'><span style='padding:8px 18px; background:linear-gradient(135deg, #667eea, #764ba2); color:white; border-radius:20px; text-decoration:none;'>+ Add Your First Skill</span></a>");
+                        }
+                        out.println("</div>");
+                    }
                 }
-
-                out.println("</div>");
-            }
-
-            out.println("</div>");
-
-            if (!hasSkills) {
-
-                out.println(
-                    "<div class='no-skills'>" +
-                    "This user has not added any skills yet." +
-                    "</div>"
-                );
             }
 
             out.println("<div class='links'>");
-
-            out.println(
-                "<a href='users'>View All Users</a>"
-            );
-
-            out.println(
-                "<a href='dashboard.html'>Back to Dashboard</a>"
-            );
-
+            if (isOwnProfile) {
+                out.println("<a href='addskill.html'>+ Add Another Skill</a>");
+            }
+            out.println("<a href='users'>View All Users</a>");
+            out.println("<a href='dashboard.html'>Back to Dashboard</a>");
             out.println("</div>");
 
-            out.println("</div>");
-
-            out.println("</div>");
-
-            out.println("</body>");
-
-            out.println("</html>");
-
-            skillRs.close();
-            skillPs.close();
-
-            userRs.close();
-            userPs.close();
-
-            con.close();
+            out.println("</div>"); // profile-card
 
         } catch (Exception e) {
-
-            out.println("<h2>Profile Error</h2>");
-
-            out.println("<p>"
-                    + e.getMessage()
-                    + "</p>");
+            out.println("<div class='profile-card'>");
+            out.println("<h2 style='color:#e74c3c;'>Profile Error</h2>");
+            out.println("<p>" + escapeHtml(e.getMessage()) + "</p>");
+            out.println("<a href='users'>Back to Users</a>");
+            out.println("</div>");
         }
+
+        out.println("</div></body></html>");
+    }
+
+    private void renderError(PrintWriter out, String title, String message, String actionLink, String actionText) {
+        out.println("<div style='max-width:500px; margin:50px auto; background:white; padding:40px; border-radius:20px; text-align:center;'>");
+        out.println("<h2 style='color:#e74c3c;'>" + title + "</h2>");
+        out.println("<p style='color:#666;'>" + message + "</p>");
+        out.println("<a style='display:inline-block; padding:10px 22px; background:linear-gradient(135deg, #667eea, #764ba2); color:white; text-decoration:none; border-radius:20px;' href='" + actionLink + "'>" + actionText + "</a>");
+        out.println("</div></body></html>");
+    }
+
+    private String escapeHtml(String text) {
+        if (text == null) return "";
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     }
 }

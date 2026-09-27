@@ -18,36 +18,63 @@
 
         .navbar {
             background: white;
-            padding: 18px 40px;
+            padding: 15px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 3px 15px rgba(0,0,0,0.15);
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .logo {
             font-size: 24px;
             font-weight: bold;
             color: #5b4bc4;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: #555;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 15px;
+            transition: 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #5b4bc4;
+            background: #f0efff;
         }
 
         .logout {
             text-decoration: none;
             background: #ff5c5c;
-            color: white;
-            padding: 10px 20px;
+            color: white !important;
+            padding: 8px 18px;
             border-radius: 20px;
             font-weight: bold;
+            font-size: 14px;
+            transition: 0.2s;
         }
 
         .logout:hover {
-            background: #e04444;
+            background: #e04444 !important;
         }
 
         .container {
             width: 90%;
             max-width: 1000px;
-            margin: 50px auto;
+            margin: 40px auto;
         }
 
         .welcome {
@@ -65,6 +92,8 @@
 
         .welcome p {
             color: #666;
+            margin: 0;
+            font-size: 16px;
         }
 
         .menu {
@@ -81,6 +110,9 @@
             text-align: center;
             box-shadow: 0 6px 20px rgba(0,0,0,0.15);
             transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .card:hover {
@@ -97,21 +129,25 @@
             color: #777;
             font-size: 14px;
             line-height: 1.5;
+            flex-grow: 1;
         }
 
         .button {
             display: inline-block;
-            margin-top: 12px;
+            margin-top: 15px;
             padding: 10px 20px;
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             text-decoration: none;
             border-radius: 20px;
             font-weight: bold;
+            font-size: 14px;
+            transition: 0.2s;
         }
 
         .button:hover {
             opacity: 0.85;
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -119,16 +155,24 @@
 <body>
 
     <div class="navbar">
-        <div class="logo">Skill Exchange</div>
+        <a class="logo" href="dashboard.html">Skill Exchange</a>
 
-        <a class="logout" href="logout">Logout</a>
+        <div class="nav-links">
+            <a class="nav-link active" href="dashboard.html">Dashboard</a>
+            <a class="nav-link" href="users">All Users</a>
+            <a class="nav-link" href="profile">My Profile</a>
+            <a class="nav-link" href="addskill.html">Add Skill</a>
+            <a class="nav-link" href="searchskill.html">Search</a>
+            <a class="nav-link" href="requests">Requests</a>
+            <a class="logout" href="logout">Logout</a>
+        </div>
     </div>
 
     <div class="container">
 
         <div class="welcome">
             <h1>Welcome to Skill Exchange</h1>
-            <p>Learn skills, share skills and connect with other users.</p>
+            <p>Learn skills, share knowledge, and connect with other community members.</p>
         </div>
 
         <div class="menu">
@@ -154,7 +198,7 @@
                 <p>
                     Find users who have the skills you want to learn.
                 </p>
-                <a class="button" href="searchskill.html">Search</a>
+                <a class="button" href="searchskill.html">Search Skills</a>
             </div>
 
             <div class="card">
@@ -168,9 +212,9 @@
             <div class="card">
                 <h3>Exchange Requests</h3>
                 <p>
-                    View and manage your skill exchange requests.
+                    View and manage incoming and outgoing exchange requests.
                 </p>
-                <a class="button" href="requests.html">View Requests</a>
+                <a class="button" href="requests">View Requests</a>
             </div>
 
         </div>

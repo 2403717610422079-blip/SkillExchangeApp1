@@ -11,260 +11,127 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 @WebServlet("/users")
 public class UsersServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    @Override
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response)
             throws ServletException, IOException {
 
-        Integer loggedUserId =
-                (Integer) request.getSession().getAttribute("user_id");
+        HttpSession session = request.getSession(false);
+        Integer loggedUserId = (session != null) ? (Integer) session.getAttribute("user_id") : null;
 
         if (loggedUserId == null) {
-
-            response.sendRedirect(
-                    request.getContextPath() + "/login.html"
-            );
-
+            response.sendRedirect(request.getContextPath() + "/login.html");
             return;
         }
 
         response.setContentType("text/html;charset=UTF-8");
-
         PrintWriter out = response.getWriter();
 
-        try {
+        String sql = "SELECT user_id, name, email FROM users WHERE user_id != ? ORDER BY name ASC";
 
-        	Connection con = DBConnection.getConnection();
-            String sql =
-                    "SELECT user_id, name, email " +
-                    "FROM users " +
-                    "WHERE user_id != ?";
+        out.println("<!DOCTYPE html>");
+        out.println("<html><head><meta charset='UTF-8'><title>All Users - Skill Exchange</title>");
+        out.println("<style>");
+        out.println("* { box-sizing: border-box; }");
+        out.println("body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); min-height: 100vh; }");
+        out.println(".navbar { background: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 3px 15px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }");
+        out.println(".logo { font-size: 24px; font-weight: bold; color: #5b4bc4; text-decoration: none; }");
+        out.println(".nav-links { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }");
+        out.println(".nav-link { color: #555; text-decoration: none; font-weight: bold; font-size: 14px; padding: 6px 12px; border-radius: 15px; transition: 0.2s; }");
+        out.println(".nav-link:hover, .nav-link.active { color: #5b4bc4; background: #f0efff; }");
+        out.println(".logout { background: #ff5c5c; color: white !important; }");
+        out.println(".logout:hover { background: #e04444 !important; }");
+        out.println(".container { width: 90%; max-width: 1000px; margin: 40px auto; }");
+        out.println(".heading { background: white; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.2); margin-bottom: 25px; }");
+        out.println(".heading h1 { color: #4b3ca7; margin: 0 0 10px 0; }");
+        out.println(".heading p { color: #777; margin: 0; }");
+        out.println(".users { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }");
+        out.println(".user-card { background: white; padding: 25px; border-radius: 18px; box-shadow: 0 6px 20px rgba(0,0,0,0.15); transition: 0.3s; text-align: center; }");
+        out.println(".user-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.25); }");
+        out.println(".user-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; margin: 0 auto 15px auto; }");
+        out.println(".user-card h2 { color: #4b3ca7; margin: 0 0 5px 0; font-size: 20px; }");
+        out.println(".user-card p { color: #666; font-size: 14px; margin-bottom: 20px; }");
+        out.println(".profile-button { display: inline-block; padding: 10px 22px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; border-radius: 20px; font-weight: bold; font-size: 14px; transition: 0.3s; }");
+        out.println(".profile-button:hover { opacity: 0.9; transform: translateY(-2px); }");
+        out.println(".empty { background: white; padding: 40px; border-radius: 18px; text-align: center; color: #777; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }");
+        out.println(".back { text-align: center; margin-top: 30px; }");
+        out.println(".back a { color: white; text-decoration: none; font-weight: bold; padding: 10px 20px; background: rgba(255,255,255,0.2); border-radius: 20px; display: inline-block; }");
+        out.println(".back a:hover { background: rgba(255,255,255,0.3); }");
+        out.println("</style></head><body>");
 
-            PreparedStatement ps =
-                    con.prepareStatement(sql);
+        // Navbar
+        out.println("<div class='navbar'>");
+        out.println("<a class='logo' href='dashboard.html'>Skill Exchange</a>");
+        out.println("<div class='nav-links'>");
+        out.println("<a class='nav-link' href='dashboard.html'>Dashboard</a>");
+        out.println("<a class='nav-link active' href='users'>All Users</a>");
+        out.println("<a class='nav-link' href='profile'>My Profile</a>");
+        out.println("<a class='nav-link' href='addskill.html'>Add Skill</a>");
+        out.println("<a class='nav-link' href='searchskill.html'>Search</a>");
+        out.println("<a class='nav-link' href='requests'>Requests</a>");
+        out.println("<a class='nav-link logout' href='logout'>Logout</a>");
+        out.println("</div></div>");
+
+        out.println("<div class='container'>");
+        out.println("<div class='heading'>");
+        out.println("<h1>Community Members</h1>");
+        out.println("<p>Explore other users, view their skills, and request skill exchanges.</p>");
+        out.println("</div>");
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, loggedUserId);
 
-            ResultSet rs =
-                    ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
+                out.println("<div class='users'>");
+                boolean found = false;
 
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
+                while (rs.next()) {
+                    found = true;
+                    int userId = rs.getInt("user_id");
+                    String name = rs.getString("name");
+                    String email = rs.getString("email");
+                    String initial = (name != null && !name.isEmpty()) ? name.substring(0, 1).toUpperCase() : "?";
 
-            out.println("<head>");
-
-            out.println("<meta charset='UTF-8'>");
-
-            out.println("<title>All Users - Skill Exchange</title>");
-
-            out.println("<style>");
-
-            out.println("* {");
-            out.println("box-sizing: border-box;");
-            out.println("}");
-
-            out.println("body {");
-            out.println("margin: 0;");
-            out.println("font-family: Arial, sans-serif;");
-            out.println("background: linear-gradient(135deg, #667eea, #764ba2);");
-            out.println("min-height: 100vh;");
-            out.println("}");
-
-            out.println(".navbar {");
-            out.println("background: white;");
-            out.println("padding: 18px 40px;");
-            out.println("display: flex;");
-            out.println("justify-content: space-between;");
-            out.println("align-items: center;");
-            out.println("box-shadow: 0 3px 15px rgba(0,0,0,0.15);");
-            out.println("}");
-
-            out.println(".logo {");
-            out.println("font-size: 24px;");
-            out.println("font-weight: bold;");
-            out.println("color: #5b4bc4;");
-            out.println("}");
-
-            out.println(".container {");
-            out.println("width: 90%;");
-            out.println("max-width: 1000px;");
-            out.println("margin: 40px auto;");
-            out.println("}");
-
-            out.println(".heading {");
-            out.println("background: white;");
-            out.println("padding: 30px;");
-            out.println("border-radius: 20px;");
-            out.println("text-align: center;");
-            out.println("box-shadow: 0 8px 25px rgba(0,0,0,0.2);");
-            out.println("margin-bottom: 25px;");
-            out.println("}");
-
-            out.println(".heading h1 {");
-            out.println("color: #4b3ca7;");
-            out.println("margin: 0 0 10px 0;");
-            out.println("}");
-
-            out.println(".heading p {");
-            out.println("color: #777;");
-            out.println("margin: 0;");
-            out.println("}");
-
-            out.println(".users {");
-            out.println("display: grid;");
-            out.println("grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));");
-            out.println("gap: 20px;");
-            out.println("}");
-
-            out.println(".user-card {");
-            out.println("background: white;");
-            out.println("padding: 25px;");
-            out.println("border-radius: 18px;");
-            out.println("box-shadow: 0 6px 20px rgba(0,0,0,0.15);");
-            out.println("transition: 0.3s;");
-            out.println("}");
-
-            out.println(".user-card:hover {");
-            out.println("transform: translateY(-5px);");
-            out.println("box-shadow: 0 10px 25px rgba(0,0,0,0.25);");
-            out.println("}");
-
-            out.println(".user-card h2 {");
-            out.println("color: #4b3ca7;");
-            out.println("margin-top: 0;");
-            out.println("}");
-
-            out.println(".user-card p {");
-            out.println("color: #666;");
-            out.println("margin-bottom: 20px;");
-            out.println("}");
-
-            out.println(".profile-button {");
-            out.println("display: inline-block;");
-            out.println("padding: 10px 20px;");
-            out.println("background: linear-gradient(135deg, #667eea, #764ba2);");
-            out.println("color: white;");
-            out.println("text-decoration: none;");
-            out.println("border-radius: 20px;");
-            out.println("font-weight: bold;");
-            out.println("}");
-
-            out.println(".profile-button:hover {");
-            out.println("opacity: 0.85;");
-            out.println("}");
-
-            out.println(".empty {");
-            out.println("background: white;");
-            out.println("padding: 30px;");
-            out.println("border-radius: 18px;");
-            out.println("text-align: center;");
-            out.println("color: #777;");
-            out.println("}");
-
-            out.println(".back {");
-            out.println("text-align: center;");
-            out.println("margin-top: 30px;");
-            out.println("}");
-
-            out.println(".back a {");
-            out.println("color: white;");
-            out.println("text-decoration: none;");
-            out.println("font-weight: bold;");
-            out.println("}");
-
-            out.println("</style>");
-
-            out.println("</head>");
-
-            out.println("<body>");
-
-            out.println("<div class='navbar'>");
-            out.println("<div class='logo'>Skill Exchange</div>");
-            out.println("</div>");
-
-            out.println("<div class='container'>");
-
-            out.println("<div class='heading'>");
-
-            out.println("<h1>All Skill Exchange Users</h1>");
-
-            out.println("<p>Explore other users and view the skills they can teach.</p>");
-
-            out.println("</div>");
-
-            out.println("<div class='users'>");
-
-            boolean found = false;
-
-            while (rs.next()) {
-
-                found = true;
-
-                int userId =
-                        rs.getInt("user_id");
-
-                String name =
-                        rs.getString("name");
-
-                String email =
-                        rs.getString("email");
-
-                out.println("<div class='user-card'>");
-
-                out.println("<h2>"
-                        + name
-                        + "</h2>");
-
-                out.println("<p>Email: "
-                        + email
-                        + "</p>");
-
-                out.println("<a class='profile-button' href='profile?user_id="
-                        + userId
-                        + "'>View Profile</a>");
+                    out.println("<div class='user-card'>");
+                    out.println("<div class='user-avatar'>" + escapeHtml(initial) + "</div>");
+                    out.println("<h2>" + escapeHtml(name) + "</h2>");
+                    out.println("<p>" + escapeHtml(email) + "</p>");
+                    out.println("<a class='profile-button' href='profile?user_id=" + userId + "'>View Profile</a>");
+                    out.println("</div>");
+                }
 
                 out.println("</div>");
+
+                if (!found) {
+                    out.println("<div class='empty'>");
+                    out.println("<h3>No Other Users Yet</h3>");
+                    out.println("<p>You are the first registered user! When new users register, they will appear here.</p>");
+                    out.println("</div>");
+                }
             }
-
-            out.println("</div>");
-
-            if (!found) {
-
-                out.println("<div class='empty'>");
-
-                out.println("<p>No other users found.</p>");
-
-                out.println("</div>");
-            }
-
-            out.println("<div class='back'>");
-
-            out.println("<a href='dashboard.html'>Back to Dashboard</a>");
-
-            out.println("</div>");
-
-            out.println("</div>");
-
-            out.println("</body>");
-
-            out.println("</html>");
-
-            rs.close();
-            ps.close();
-            con.close();
 
         } catch (Exception e) {
-
-            out.println("<h2>Error Loading Users</h2>");
-
-            out.println("<p>"
-                    + e.getMessage()
-                    + "</p>");
+            out.println("<div class='empty'>");
+            out.println("<h3>Error Loading Users</h3>");
+            out.println("<p>" + escapeHtml(e.getMessage()) + "</p>");
+            out.println("</div>");
         }
+
+        out.println("<div class='back'><a href='dashboard.html'>← Back to Dashboard</a></div>");
+        out.println("</div></body></html>");
+    }
+
+    private String escapeHtml(String text) {
+        if (text == null) return "";
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     }
 }
