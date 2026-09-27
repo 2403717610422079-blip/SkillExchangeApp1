@@ -2,6 +2,7 @@ package com.skillexchange;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DBConnection {
@@ -30,15 +31,34 @@ public class DBConnection {
         String password = getEnv("SKILL_DB_PASSWORD", "MYSQLPASSWORD", null);
 
         if (user == null || password == null) {
-            throw new Exception("Database credentials are not configured. Please set SKILL_DB_USER and SKILL_DB_PASSWORD (or MYSQLUSER and MYSQLPASSWORD).");
+            throw new Exception("Database credentials are not configured. Please set SKILL_DB_USER and SKILL_DB_PASSWORD (or MySQL variable references).");
         }
-
-        String url = "jdbc:mysql://" + host + ":" + port + "/" + database
-                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&autoReconnect=true";
 
         Class.forName("com.mysql.cj.jdbc.Driver");
 
-        Connection con = DriverManager.getConnection(url, user, password);
+        String params = "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&autoReconnect=true";
+        String urlWithDb = "jdbc:mysql://" + host + ":" + port + "/" + database + params;
+        String urlWithoutDb = "jdbc:mysql://" + host + ":" + port + "/" + params;
+
+        Connection con = null;
+
+        try {
+            con = DriverManager.getConnection(urlWithDb, user, password);
+        } catch (SQLException e) {
+            // Error code 1049 is ER_BAD_DB_ERROR ("Unknown database")
+            if (e.getErrorCode() == 1049 || (e.getMessage() != null && e.getMessage().toLowerCase().contains("unknown database"))) {
+                try (Connection serverCon = DriverManager.getConnection(urlWithoutDb, user, password);
+                     Statement stmt = serverCon.createStatement()) {
+                    stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS `" + database.replace("`", "") + "`");
+                } catch (Exception createDbEx) {
+                    System.err.println("Could not create database `" + database + "`: " + createDbEx.getMessage());
+                }
+                // Try connecting again after creating database
+                con = DriverManager.getConnection(urlWithDb, user, password);
+            } else {
+                throw e;
+            }
+        }
 
         if (!tablesInitialized) {
             synchronized (DBConnection.class) {
@@ -89,7 +109,6 @@ public class DBConnection {
                 ")"
             );
         } catch (Exception e) {
-            // Log but don't prevent connection if tables already exist or user lacks DDL privileges
             System.err.println("Database table initialization check: " + e.getMessage());
         }
     }

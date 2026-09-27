@@ -59,7 +59,7 @@ public class RegisterServlet extends HttpServlet {
             }
 
         } catch (SQLException e) {
-            String message = "A database error occurred. Please try again.";
+            String message = e.getMessage();
             if (e.getMessage() != null && e.getMessage().toLowerCase().contains("duplicate")) {
                 message = "An account with the email <b>" + escapeHtml(email) + "</b> already exists. Please login instead.";
             }
