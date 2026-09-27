@@ -42,6 +42,7 @@ public class AuthFilter implements Filter {
                 || path.equals("/login")
                 || path.equals("/register.html")
                 || path.equals("/register")
+                || path.equals("/debug-db")
                 || path.endsWith(".css")
                 || path.endsWith(".js")
                 || path.endsWith(".png")
